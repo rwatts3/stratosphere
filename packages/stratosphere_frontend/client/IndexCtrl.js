@@ -1,25 +1,20 @@
 angular
   .module('stratosphere')
-    .controller('InstructionsCtrl', InstructionsCtrl)
     .controller("IndexCtrl", IndexCtrl);
 
-InstructionsCtrl.$inject = ['$scope','$mdDialog'];
 
-function InstructionsCtrl($scope,$mdDialog) {
-  var self = this;
-  self.$scope = $scope;
-  self.cancel = function(){
-    $mdDialog.hide();
-  }
-};
+IndexCtrl.$inject = ['$scope','$rootScope','$state','$meteor','$mdDialog'];
 
-
-IndexCtrl.$inject = ['$scope','$mdDialog'];
-
-function IndexCtrl($scope,$mdDialog) {
+function IndexCtrl($scope,$rootScope,$state,$meteor,$mdDialog) {
 
   var self = this;
   self.$scope = $scope;
+
+  console.log($rootScope.currentUser);
+
+  self.loginRequired = Meteor.settings.public.loginRequired;
+  self.logout = $meteor.logout;
+  self.login = login;
 
   self.settings = {
     printLayout: true,
@@ -30,6 +25,19 @@ function IndexCtrl($scope,$mdDialog) {
 
   self.showInstructions = showInstructions;
 
+  function login(){
+    //$state.go('login');
+    $meteor.loginWithMeteorDeveloperAccount().then(function(){
+      // $history.previous();
+    }, function(err){
+      console.log('Login error - ', err.msg);
+      $mdToast.show(
+          $mdToast.simple()
+              .content("Login error: "+err.msg)
+      );
+      $state.go('forbidden');
+    });
+  }
 
   function showInstructions($event){
     $mdDialog.show({
